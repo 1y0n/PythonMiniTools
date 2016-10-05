@@ -38,6 +38,8 @@ class decoder():
             print 'MD5: ', re.findall('<span id="ctl00_ContentPlaceHolder1_LabelAnswer">(.*?)<br>', driver.page_source, re.I)[0]
         except:
             print 'Failed to decode as MD5'
+        finally:
+            driver.close()
 
 
 class encoder():
