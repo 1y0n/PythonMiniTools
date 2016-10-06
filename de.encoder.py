@@ -22,7 +22,7 @@ class decoder():
             try:
                 print '%s: %s' % (item, eval(value))
             except:
-                print 'Failed to decode as %s' % item
+                print '[!] Failed to decode as %s' % item
         self.md5_decode()
 
     def md5_decode(self):
@@ -35,9 +35,9 @@ class decoder():
             submit = driver.find_element_by_name('ctl00$ContentPlaceHolder1$Button1')
             input.send_keys(self.code)
             submit.click()
-            print 'MD5: ', re.findall('<span id="ctl00_ContentPlaceHolder1_LabelAnswer">(.*?)<br>', driver.page_source, re.I)[0]
+            print 'MD5: ', re.findall('<span id="ctl00_ContentPlaceHolder1_LabelAnswer">(.*?)[<br>|<a]', driver.page_source, re.I)[0]
         except:
-            print 'Failed to decode as MD5'
+            print '[!] Failed to decode as MD5'
         finally:
             driver.close()
 
@@ -67,7 +67,7 @@ class encoder():
             md.update(self.code)
             print 'MD5: ', md.hexdigest()
         except:
-            print 'Failed to encode as MD5'
+            print '[!] Failed to encode as MD5'
 
 
 if __name__ == "__main__":
