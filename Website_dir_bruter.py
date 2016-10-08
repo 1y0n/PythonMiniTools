@@ -19,6 +19,7 @@ class website_dir_scaner():
 
     def get_directory(self):
         try:
+            #recommend dirbuster
             directory = open('directory/website_dir.txt')
             for line in directory.readlines():
                 self.dir_queue.put(line.rstrip())
@@ -31,7 +32,7 @@ class website_dir_scaner():
             url = self.baseurl + r'/robots.txt'
             html = requests.get(url).text
             list = re.findall('Disallow: (.*)', html)
-            print '[+] Robots.txt found!'
+            print '[-] Robots.txt found!'
             for i in list:
                 print i
                 self.dir_queue.put(i)
