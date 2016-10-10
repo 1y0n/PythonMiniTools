@@ -76,7 +76,6 @@ if __name__ == '__main__':
 					Port_Queue.put(int(i))
 			else:
 				Port_Queue.put(int(port))
-	string = 'Thread(target=tcp_connect_scan(options.target_ip, RandShort()))'
  	if options.method in ['cnt', 'syn', 'ack']:
 		for i in range(options.threads):
 			t = eval(cmd_dir[options.method])
