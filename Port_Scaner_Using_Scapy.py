@@ -60,6 +60,10 @@ if __name__ == '__main__':
 	(options, args) = parser.parse_args()
 	Port_Queue = Queue.Queue()
 	thread_list = []
+	cmd_dir = {'cnt': 'Thread(target=tcp_connect_scan(options.target_ip, RandShort()))',
+		   'syn': 'Thread(target=tcp_syn_scan(options.target_ip, RandShort()))',
+	           'ack': 'Thread(target=tcp_ack_scan(options.target_ip))'
+		  }
 	if (options.target_ip == ''):
 		print '[!] Need a target IP!'
 		exit(0)
@@ -68,28 +72,18 @@ if __name__ == '__main__':
 		for port in port_list:
 			if '-' in port:
 				tmp_port_list = port.split('-')
-				for i in range(int(tmp_port_list[0]), int(tmp_port_list[-1] + 1)):
+				for i in range(int(tmp_port_list[0]), int(tmp_port_list[-1]) + 1):
 					Port_Queue.put(int(i))
 			else:
 				Port_Queue.put(int(port))
- 	if options.method == 'cnt':
+	string = 'Thread(target=tcp_connect_scan(options.target_ip, RandShort()))'
+ 	if options.method in ['cnt', 'syn', 'ack']:
 		for i in range(options.threads):
-			t = Thread(target=tcp_connect_scan(options.target_ip, RandShort()))
+			t = eval(cmd_dir[options.method])
 			thread_list.append(t)
 			t.start()
 		for t in thread_list:
 			t.join()
-	if options.method == 'syn':
-                for i in range(options.threads):
-                        t = Thread(target=tcp_syn_scan(options.target_ip, RandShort()))
-                        thread_list.append(t)
-                        t.start()
-                for t in thread_list:
-                        t.join()
-	if options.method == 'ack':
-                for i in range(options.threads):
-                        t = Thread(target=tcp_ack_scan(options.target_ip))
-                        thread_list.append(t)
-                        t.start()
-                for t in thread_list:
-                        t.join()
+	else:
+		print '[!] Not support this method!'
+		exit(0)
