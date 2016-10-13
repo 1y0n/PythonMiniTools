@@ -75,7 +75,7 @@ if __name__ == "__main__":
         print
         '''Usage:
                 Encode: python de.encoder.py StringToEncode -e
-                Decode: python de.encoder.py StringToDecode'''
+                Decode: python de.encoder.py StringToDecode -d'''
     elif sys.argv[2] == '-e':
         encode = encoder(sys.argv[1])
         encode.encode()
