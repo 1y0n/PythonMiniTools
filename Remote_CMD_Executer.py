@@ -1,5 +1,7 @@
 #coding:utf-8
 
+#better one: NetCopyCat
+
 import subprocess
 import socket
 import urllib2
