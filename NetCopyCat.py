@@ -1,5 +1,7 @@
 #coding:utf-8
 
+#Based on code from <Black Hat Python>
+
 import socket
 import optparse
 import sys
