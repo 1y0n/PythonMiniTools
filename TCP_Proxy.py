@@ -18,7 +18,7 @@ def server_loop(local_host, local_port, remote_host, remote_port, receive_first)
     while True:
         client_socket, addr = server.accept()
         print '--> Received incoming connection from %s:%d' % (addr[0], addr[1])
-        proxy_thread = threading.Thread()
+        proxy_thread = threading.Thread(target=proxy_handler, args=(client_socket, remote_host, remote_port, receive_first))
         proxy_thread.start()
 
 def hexdump(src, length=16):
