@@ -1,3 +1,3 @@
 # PythonMiniTools
-PythonMiniTools
-For purpose of learning
+PythonMiniTools 
+for purpose of learning
