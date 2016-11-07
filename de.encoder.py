@@ -4,7 +4,7 @@ import binascii
 import sys
 from hashlib import md5
 from urllib import quote, unquote
-from selenium import webdriver  #mechanize is a better choice. i dont test POST ;)
+from selenium import webdriver  #mechanize is a better choice. i didn't test POST method ;)
 import re
 
 class decoder():
@@ -45,20 +45,68 @@ class decoder():
 class encoder():
     def __init__(self, code):
         self.code = code
-        self.encode_list = {'Base64': "binascii.b2a_base64(self.code)",
-                            'HEX': "binascii.b2a_hex(self.code)",
-                            'URL(GBK)': "quote(self.code.decode(sys.stdin.encoding).encode('gbk'))",
-                            'URL(UTF-8)': "quote(self.code.decode(sys.stdin.encoding).encode('utf-8'))",
-                            'Chr': 'chr(int(self.code))',
-                            'Ord': 'ord(self.code)'}
 
-    def encode(self):
-        print '-----------Encode Result Of %s-----------' % self.code
-        for item, value in self.encode_list.items():
+    def b64encode(self):
+        try:
+            print 'Base64:  ' + binascii.b2a_base64(self.code)
+        except:
+            print '[!] Failed to encode as Base64'
+        self.url_std_encode()
+
+    def url_std_encode(self):
+        try:
+            print 'URL(simple):  ' + unquote(self.code)
+        except:
+            print '[!] Failed to encode as URL(Simple)'
+        self.url_full_encode()
+
+    def url_full_encode(self):
+        result = ''
+        try:
+            for i in self.code:
+                result = result + '%' + binascii.b2a_hex(i)
+        except:
+            print '[!] Failed to encode as URL(Full)'
+        print 'URL(full):  ' + result
+        self.url_double_encode()
+
+    def url_double_encode(self):
+        result = ''
+        try:
+            for i in self.code:
+                result = result + '%25' + binascii.b2a_hex(i)
+        except:
+            print '[!] Failed to encode as URL(double)'
+        print 'URL(double):  ' + result
+        self.hex_encode()
+
+    def hex_encode(self):
+        try:
+            print 'Hex:  ' + binascii.b2a_hex(self.code)
+        except:
+            print '[!] Failed to encode as HEX'
+        self.chr_encode()
+
+    def chr_encode(self):
+        result = ''
+        for c in self.code:
             try:
-                print '%s: %s' % (item, eval(value))
+                result = ' ' + chr(int(c))
             except:
-                print '[!] Failed to encode as %s' % item
+                result = '[!] Failed to encode as chr'
+                break
+        print 'Chr:  ' + result
+        self.ord_encode()
+
+    def ord_encode(self):
+        result = ''
+        for c in self.code:
+            try:
+                result = ' ' + str(ord(c))
+            except:
+                result = '[!] Failed to encode as ord'
+                break
+        print 'Ord:  ' + result
         self.md5_encode()
 
     def md5_encode(self):
@@ -75,10 +123,10 @@ if __name__ == "__main__":
         print
         '''Usage:
                 Encode: python de.encoder.py StringToEncode -e
-                Decode: python de.encoder.py StringToDecode -d'''
+                Decode: python de.encoder.py StringToDecode'''
     elif sys.argv[2] == '-e':
         encode = encoder(sys.argv[1])
-        encode.encode()
+        encode.b64encode()
     else:
         decode = decoder(sys.argv[1])
         decode.decode()
