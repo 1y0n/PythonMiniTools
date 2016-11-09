@@ -1,5 +1,7 @@
 #coding:utf-8
 
+#based on code from internet
+
 import logging
 #get rid of the Warning
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
