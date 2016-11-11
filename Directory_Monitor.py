@@ -5,6 +5,7 @@ import threading
 import win32con
 
 dirs = [r'd:\test']
+# action maybe wrong,cause too many action happened.
 action_dir = {1: 'New', 2: 'Delete', 3: 'Change', 4: 'Unknown', 5: 'Rename'}
 def start_monitor(path_to_watch):
     h_directory = win32file.CreateFile(path_to_watch, win32con.GENERIC_READ, win32con.FILE_SHARE_DELETE|win32con.FILE_SHARE_READ
