@@ -2,38 +2,41 @@
 
 import re
 import sys
+import time
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+
+QTextCodec.setCodecForTr(QTextCodec.codecForName("utf8"))
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__(None)
         self.reg_edit = QTextEdit()
-        self.i_checkbox = QCheckBox('Re.I')
-        self.m_checkbox = QCheckBox('Re.M')
-        self.s_checkbox = QCheckBox('Re.S')
+        self.i_checkbox = QCheckBox(self.tr('Re.I(忽略大小写)'))
+        self.m_checkbox = QCheckBox(self.tr('Re.M(多行模式，影响^和$)'))
+        self.s_checkbox = QCheckBox(self.tr('Re.S(任意匹配模式，改变.的行为)'))
         self.string_edit = QTextEdit()
         self.result_edit = QTextEdit()
-        self.ok_btn = QPushButton('OK')
-        self.clear_btn = QPushButton('Clear All')
+        self.ok_btn = QPushButton(self.tr('OK(匹配)'))
+        self.clear_btn = QPushButton(self.tr('Clear All(清除全部)'))
         self.highlighter = highlighter(self.string_edit)
         grid = QGridLayout()
-        grid.addWidget(QLabel('Input your reg exp here:'), 0, 0, 1, 2)
+        grid.addWidget(QLabel(self.tr('Input your reg exp here(在此输入你的正则表达式):')), 0, 0, 1, 2)
         grid.addWidget(self.reg_edit, 1, 0, 3, 5)
         grid.addWidget(self.i_checkbox, 4, 0)
         grid.addWidget(self.m_checkbox, 4, 1)
         grid.addWidget(self.s_checkbox, 4, 2)
         grid.addWidget(self.ok_btn, 4, 3)
         grid.addWidget(self.clear_btn, 4, 4)
-        grid.addWidget(QLabel('Paste your string here:'), 5, 0, 1, 2)
-        grid.addWidget(QLabel('Result:'), 5, 3, 1, 2)
+        grid.addWidget(QLabel(self.tr('Paste your string here(在此粘贴原文本):')), 5, 0, 1, 2)
+        grid.addWidget(QLabel(self.tr('Result(匹配结果):')), 5, 3, 1, 2)
         grid.addWidget(self.string_edit, 6, 0, 1, 3)
         grid.addWidget(self.result_edit, 6, 3, 1, 2)
         widget = QWidget()
         widget.setLayout(grid)
         self.setCentralWidget(widget)
         self.resize(900, 600)
-        self.setWindowTitle('Regex Tester for Python')
+        self.setWindowTitle('Regex Tester for Python - UTF-8 Supported')
         self.statusBar().showMessage('Ready!')
         self.clear_btn.clicked.connect(lambda: self.clear_all())
         self.ok_btn.clicked.connect(lambda: self.reg())
@@ -61,12 +64,13 @@ class MainWindow(QMainWindow):
         elif ((not rei) and (not rem) and res):
             self.pattern = re.compile(string, re.S)
 
+        t = time.time()
         self.result_list = re.findall(self.pattern, unicode(self.string_edit.toPlainText()))
         for result in self.result_list:
             self.result_edit.setText(unicode(self.result_edit.toPlainText()) + result + '\n')
-        self.statusBar().showMessage('Complete!  ' + unicode(len(self.result_list)) + '  result(s) found!')
         self.highlighter.setHighlightData(self.result_list)
         self.highlighter.rehighlight()
+        self.statusBar().showMessage('Complete!  ' + unicode(len(self.result_list)) + '  result(s) founded in ' + str(time.time() - t)+ ' s.')
 
     def clear_all(self):
         self.reg_edit.setText('')
