@@ -36,7 +36,7 @@ class MainWindow(QMainWindow):
         widget.setLayout(grid)
         self.setCentralWidget(widget)
         self.resize(900, 600)
-        self.setWindowTitle('Regex Tester for Python - UTF-8 Supported')
+        self.setWindowTitle(self.tr('Regex Tester for Python - 支持中文'))
         self.statusBar().showMessage('Ready!')
         self.clear_btn.clicked.connect(lambda: self.clear_all())
         self.ok_btn.clicked.connect(lambda: self.reg())
