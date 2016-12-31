@@ -1,0 +1,145 @@
+#coding:utf-8
+
+import re
+import requests
+import threading
+import os
+import Queue
+
+
+#网站URL
+base_url = 'http://localhost/'
+#网站根目录
+root_dir = 'D:\\phpStudy\\WWW'
+#危险函数
+danger_fuc_list = ['eval', 'assert', 'preg_replace']
+#是否启用动态检测
+allow_dynamic_detect = False
+file_q = Queue.Queue()
+d_file_q = Queue.Queue()
+
+
+def str_rot13(text):
+    return text.decode("rot13")
+
+
+def base64_decode(text):
+    return text.decode("base64")
+
+
+def str_replace(ptn, repl, text):
+    return text.replace(ptn, repl)
+
+
+def decoder(text): #解码PHP代码，目前支持str_rot13,base64解码和str_replace字符(串)替换
+    r1 = ''
+    r2 = ''
+    r3 = ''
+    if 'base64_decode' in text:
+        result = re.findall('base64_decode\(.*?\)', text, re.I)
+        for i in result:
+            try:
+                num = len(re.findall('\(', i)) - len(re.findall('\)', i))
+                i += ')' * num
+                r1 = eval(i)
+            except:
+                pass
+    if 'str_rot13' in text:
+        result = re.findall('str_rot13\(.*?\)', text, re.I)
+        for i in result:
+            try:
+                num = len(re.findall('\(', i)) - len(re.findall('\)', i))
+                i += ')' * num
+                r2 = eval(i)
+            except:
+                pass
+    if 'str_replace' in text:
+        result = re.findall('str_replace\(.*?\)', text, re.I)
+        for i in result:
+            try:
+                num = len(re.findall('\(', i)) - len(re.findall('\)', i))
+                i += ')' * num
+                r3 = eval(i)
+            except:
+                pass
+    if r1 in danger_fuc_list or r2 in danger_fuc_list or r3 in danger_fuc_list:
+        return True #存在经过编码的危险函数说明代码有问题
+    else:
+        return False
+
+
+def static_detect():#静态检测
+    filename = file_q.get()
+    with open(filename) as f:
+        text = f.read()
+    if decoder(text):
+        print '[!] This File Contains Encoded Danger Function!  -->  %s' % filename
+    preg_re_pattern = re.compile(r'preg_replace(.*?)/e(.*?)\$', re.I)
+    eval_pattern = re.compile(r'eval\(.*?\$.*?\)', re.I)
+    assert_pattern = re.compile(r'assert\(.*?\$.*?\)', re.I)
+    preg_re_pattern_1 = re.compile(r'p.*?r.*?e.*?g.*?_.*?r.*?e.*?p.*?l.*?a.*?c.*?e', re.I)
+    eval_pattern_1 = re.compile(r'e.*?v.*?a.*?l', re.I)
+    assert_pattern_1 = re.compile(r'a.*?s.*?s.*?e.*?r.*?t', re.I)
+    extra_pattern_1 = re.compile(r'(\$\w+?)\(\$', re.I)
+    danger_var_list = re.findall(extra_pattern_1, text)
+    if re.findall(preg_re_pattern,text) or re.findall(eval_pattern, text) or re.findall(assert_pattern, text):
+        print '[!] Variable In Danger Function!  -->  %s' % filename
+    if danger_var_list:
+        for danger_var in danger_var_list:
+            result = ''.join(re.findall('\\' + danger_var + '.*?=.*?\w*?;', text, re.I))
+            if re.findall(preg_re_pattern_1, result) or re.findall(eval_pattern_1, result) or re.findall(assert_pattern_1, result):
+                print '[!] Danger Variable!  -->  %s' % filename
+
+
+def dynamic_detect():#动态检测
+    filename = d_file_q.get()
+    post_pattern = re.compile(r'\$_POST\[[\'|\"](.*)[\'|\"]\]', re.I)
+    f = open(filename, 'r')
+    var_list = re.findall(post_pattern, f.read())
+    f.close()
+    url = filename.replace(root_dir, base_url)
+    url = url.replace('\\', '/')
+    for var in var_list:
+        data = {var: 'echo "yijuhuadetect";'}
+        result = requests.post(url, data=data).text
+        if "yijuhuadetect" in result:
+            print '[!] Dynamic Detect Return A DANGER File!  -->  %s' % filename
+
+
+def get_all_file(dir, filelist): #爬行给定目录下所有文件
+    newDir = dir
+    if os.path.isfile(dir):
+        filelist.append(dir.decode('gbk'))
+    elif os.path.isdir(dir):
+        for s in os.listdir(dir):
+            newDir = os.path.join(dir, s)
+            get_all_file(newDir, filelist)
+    return filelist
+
+
+def start_detect(dir):
+    t_list = []
+    for f in get_all_file(dir, []):
+        if f.endswith('.php'):
+            file_q.put(f)
+    d_file_q = file_q
+    print '[*] %d  File(s) Get! Now Starting Detect...' % file_q.qsize()
+    for i in range(file_q.qsize()):
+        t = threading.Thread(target=static_detect())
+        t_list.append(t)
+        t.start()
+    for tt in t_list:
+        tt.join()
+    if allow_dynamic_detect:
+        print '[*] Starting Dynamic Detect...'
+        for i in range(d_file_q.qsize()):
+            t = threading.Thread(target=dynamic_detect())
+            t_list.append(t)
+            t.start()
+        for tt in t_list:
+            tt.join()
+
+if __name__ == '__main__':
+    print '[*] Getting files...'
+    start_detect('D:\\phpStudy\\WWW\\evaltest') #要扫描的目录
+    print '[*] All Done!'
